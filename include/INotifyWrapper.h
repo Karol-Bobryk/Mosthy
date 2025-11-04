@@ -8,7 +8,7 @@
 #include <vector>
 
 class INotifyWrapper {
-  // File Descriptor
+  // File Descriptors
   int INotifyInstance;
   std::vector<int> filesSupervised;
 
@@ -22,11 +22,11 @@ public:
 
   bool IsInstanceGood();
   void AddWatch(std::string, uint32_t);
+  void RemoveWatchByIndex(size_t);
+  void WatchFiles();
+
   class INotifyInstanceFailure : std::exception {
-    const char *what() const noexcept override {
-      return "INotifyInstance failed"; // Terrible, non descriptive change it
-                                       // later or smth
-    }
+    const char *what() const noexcept override;
   };
 };
 

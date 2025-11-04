@@ -1,4 +1,12 @@
-#include <INotifyWrapper.h>
+#include "INotifyWrapper.h"
+#include <cerrno>
+#include <cstdio>
+#include <iostream>
+#include <stdexcept>
+#include <sys/fcntl.h>
+#include <sys/inotify.h>
+#include <sys/select.h>
+#include <unistd.h>
 
 INotifyWrapper::~INotifyWrapper() {
   if (IsInstanceGood()) {
@@ -6,9 +14,44 @@ INotifyWrapper::~INotifyWrapper() {
   }
 }
 
+bool INotifyWrapper::IsInstanceGood() { return (INotifyInstance >= 0); }
+
 void INotifyWrapper::AddWatch(std::string path, uint32_t mask) {
   int fd = inotify_add_watch(INotifyInstance, path.c_str(), mask);
   filesSupervised.push_back(fd);
 }
 
-bool INotifyWrapper::IsInstanceGood() { return (INotifyInstance >= 0); }
+void INotifyWrapper::RemoveWatchByIndex(size_t index) {
+  if (index >= filesSupervised.size())
+    throw std::out_of_range("No file under given index");
+
+  // Checking if given fd is still open
+  if (fcntl(filesSupervised[index], F_GETFD) || errno == EBADF)
+    inotify_rm_watch(INotifyInstance, filesSupervised[index]);
+
+  filesSupervised.erase(filesSupervised.begin() + index);
+}
+
+void INotifyWrapper::WatchFiles() {
+
+  inotify_event ieStruct = {.mask = 0};
+
+  while (true) {
+    switch (ieStruct.mask) {
+    case IN_MODIFY: // TODO: act on modified file
+      break;
+    case IN_IGNORED:
+      break; // TODO: act on file removed or inode id changed
+    default:;
+    }
+
+    read(INotifyInstance, &ieStruct, sizeof(inotify_event));
+  }
+
+  RemoveWatchByIndex(0);
+}
+
+const char *INotifyWrapper::INotifyInstanceFailure::what() const noexcept {
+  return "INotifyInstance failed"; // Terrible, non descriptive change it
+                                   // later or smth
+}
