@@ -4,7 +4,6 @@
 #include <exception>
 #include <string>
 #include <sys/inotify.h>
-#include <unistd.h>
 #include <vector>
 
 class INotifyWrapper {
@@ -23,7 +22,7 @@ public:
   bool IsInstanceGood();
   void AddWatch(std::string, uint32_t);
   void RemoveWatchByIndex(size_t);
-  void WatchFiles();
+  void WatchFiles(std::string);
 
   class INotifyInstanceFailure : std::exception {
     const char *what() const noexcept override;
