@@ -1,9 +1,8 @@
 #include "INotifyWrapper.h"
-#include <algorithm>
+#include "ProcessManager.h"
 #include <cerrno>
 #include <csignal>
 #include <cstdio>
-#include <iostream>
 #include <stdexcept>
 #include <sys/fcntl.h>
 #include <sys/inotify.h>
@@ -21,7 +20,8 @@ INotifyWrapper::~INotifyWrapper() {
 bool INotifyWrapper::IsInstanceGood() { return (INotifyInstance >= 0); }
 
 void INotifyWrapper::AddWatch(std::string path, uint32_t mask) {
-  int fd = inotify_add_watch(INotifyInstance, path.c_str(), mask);
+  int fd = inotify_add_watch(INotifyInstance, path.c_str(),
+                             mask); // TODO error checking
   filesSupervised.push_back(fd);
 }
 
@@ -31,7 +31,8 @@ void INotifyWrapper::RemoveWatchByIndex(size_t index) {
 
   // Checking if given fd is still open
   if (fcntl(filesSupervised[index], F_GETFD) || errno == EBADF)
-    inotify_rm_watch(INotifyInstance, filesSupervised[index]);
+    inotify_rm_watch(INotifyInstance,
+                     filesSupervised[index]); // TODO error checking
 
   filesSupervised.erase(filesSupervised.begin() + index);
 }
@@ -40,48 +41,19 @@ void INotifyWrapper::WatchFiles(std::string cmd) {
 
   inotify_event ieStruct;
 
-  pid_t processId;
+  ProcessManager pManager(cmd);
 
   while (true) {
-    processId = fork();
+    pManager.StartProcess();
 
-    switch (processId) {
-    case -1:
-      throw std::runtime_error(
-          "Program refused to fork, will add spork support later");
-      break;
-    case 0: {
-      std::vector<std::string> childArgsStr = {"ls", "-l"};
-      std::vector<char *> childArgs;
+    int watchStatus = read(INotifyInstance, &ieStruct, sizeof(inotify_event));
 
-      for (const auto &arg : childArgsStr) {
-        childArgs.push_back(const_cast<char *>(arg.c_str()));
-      }
-      childArgs.push_back(nullptr);
-
-      int status =
-          execvp(cmd.c_str(), childArgs.data()); // input not sanitized btw
-      perror("");
-      exit(1);
-      break;
-    }
-
-    default:
-      // YE OLDE PROCESS
-      break;
-    }
-
-    read(INotifyInstance, &ieStruct, sizeof(inotify_event));
+    if (watchStatus == -1)
+      throw std::runtime_error("Failed to watch files");
 
     switch (ieStruct.mask) {
     case IN_MODIFY: {
-      std::cout << processId << std::endl;
-      kill(processId, SIGTERM);
-
-      int status = 0;
-      if (waitpid(processId, &status, 0) == -1) {
-        throw std::runtime_error("Couldnt wait for child process");
-      }
+      pManager.KillProcess();
       break;
     }
 
