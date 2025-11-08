@@ -16,4 +16,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -MMD -MP -O0 -g")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable("${CMAKE_PROJECT_NAME}" src/main.cpp src/INotifyWrapper.cpp src/ProcessManager.cpp)
+add_executable("${CMAKE_PROJECT_NAME}" src/main.cpp src/INotifyWrapper.cpp src/ProcessManager.cpp src/ArgumentHandler.cpp)
