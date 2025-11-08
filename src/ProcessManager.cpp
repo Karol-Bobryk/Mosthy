@@ -1,13 +1,11 @@
 #include "ProcessManager.h"
-#include <cstdio>
 #include <cstring>
-#include <iostream>
 #include <spawn.h>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <sys/wait.h>
-#include <unistd.h>
+#include <system_error>
 #include <vector>
 
 ProcessManager::~ProcessManager() { KillProcess(); }
@@ -35,10 +33,12 @@ void ProcessManager::StartProcess() {
 
 void ProcessManager::KillProcess() {
 
-  kill(processId, SIGTERM);
-  int status = 0;
+  if (kill(processId, SIGTERM) == -1)
+    throw std::system_error();
+
+  int status = 0; // TODO: add status checking
   if (waitpid(processId, &status, 0) == -1) {
-    throw std::runtime_error("Couldnt wait for child process.");
+    throw std::system_error();
   }
 }
 

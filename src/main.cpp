@@ -1,8 +1,5 @@
 #include "INotifyWrapper.h"
-#include <cerrno>
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <sys/inotify.h>
 
 int main(int argc, char *argv[]) {
