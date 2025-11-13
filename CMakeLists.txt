@@ -4,16 +4,21 @@ project(bobbxldr)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include_directories(include)
 
 set(CMAKE_BUILD_TYPE DEBUG)
 
-set(CMAKE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -MMD -MP -O0 -g")
+add_compile_options(-MMD -MP -O0 -g)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable("${CMAKE_PROJECT_NAME}" src/main.cpp src/INotifyWrapper.cpp src/ProcessManager.cpp src/ArgumentHandler.cpp)
+add_executable(${CMAKE_PROJECT_NAME} 
+  src/main.cpp 
+  src/INotifyWrapper.cpp 
+  src/ProcessManager.cpp 
+  src/ArgumentHandler.cpp
+)
