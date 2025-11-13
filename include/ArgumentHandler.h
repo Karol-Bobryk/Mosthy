@@ -1,39 +1,33 @@
 #ifndef ARGUMENT_HANDLER
 #define ARGUMENT_HANDLER
+#include <array>
 #include <functional>
 #include <map>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
-typedef struct FlagHandlerArguments {
-  std::vector<std::string> args;
-
-public:
-  ~FlagHandlerArguments() = default;
-  FlagHandlerArguments() {}
-} FlagHandlerArguments;
-
-typedef struct TestArgs : FlagHandlerArguments {
-  int test;
-
-  TestArgs() : TestArgs(0) {}
-  TestArgs(int val) : test(val), FlagHandlerArguments() {}
-
-} TestArgs;
+constexpr std::array<std::string_view, 2> FLAGS = {"-f", "-c"};
+constexpr std::string_view DEFAULT_FLAG = "-f";
 
 class ArgumentHandler {
-  using argFuncPair = std::pair<std::vector<std::string>,
-                                std::function<void(FlagHandlerArguments &)>>;
+  using Handler = std::function<void(std::vector<std::string>)>;
+  using ArgFuncPair = std::pair<std::vector<std::string>, Handler>;
   int count;
   std::vector<std::string> values;
 
-public:
-  std::map<std::string, argFuncPair> FlagToFunctionMap;
+  void InitializeMap();
 
-  ArgumentHandler();
+public:
+  std::map<std::string, ArgFuncPair> FlagToFunctionMap;
+
   ArgumentHandler(int, char *[]);
   ~ArgumentHandler();
+
+  void AddHandler(std::string, Handler);
+  void RunHandler(std::string);
+  static bool IsFlag(std::string);
 };
 
 #endif
