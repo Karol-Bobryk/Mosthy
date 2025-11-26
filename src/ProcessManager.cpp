@@ -18,6 +18,7 @@ void ProcessManager::StartProcess() {
   for (const auto &arg : childArguments) {
     argV.push_back(const_cast<char *>(arg.c_str()));
   }
+
   argV.push_back(nullptr);
 
   int status =
