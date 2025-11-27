@@ -1,14 +1,14 @@
 #ifndef INOTIFYWRAPPER
 #define INOTIFYWRAPPER
 
+#include <map>
 #include <string>
 #include <sys/inotify.h>
-#include <vector>
 
 class INotifyWrapper {
   // File Descriptors
   int INotifyInstance;
-  std::vector<int> filesSupervised;
+  std::map<int, std::string> FdToPathMap;
 
 public:
   ~INotifyWrapper();
@@ -16,7 +16,7 @@ public:
 
   bool IsInstanceGood();
   void AddWatch(std::string, uint32_t);
-  void RemoveWatchByIndex(size_t);
+  void RemoveWatchByFd(int);
   void WatchFiles(std::string);
 };
 
