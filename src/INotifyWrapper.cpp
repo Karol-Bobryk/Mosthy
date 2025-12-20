@@ -16,16 +16,27 @@ INotifyWrapper::~INotifyWrapper() {
   }
 }
 
-INotifyWrapper::INotifyWrapper() : INotifyInstance{inotify_init()} {
-  if (!IsInstanceGood()) {
+INotifyWrapper::INotifyWrapper()
+    : INotifyInstance{inotify_init()}, FallbackFlags(0) {
+  if (!IsInstanceGood())
     throw std::system_error();
-  }
+}
+
+INotifyWrapper::INotifyWrapper(uint32_t FallbackFlags)
+    : INotifyInstance{inotify_init1(FallbackFlags)}, FallbackFlags(0) {
+  if (!IsInstanceGood())
+    throw std::system_error();
 }
 
 bool INotifyWrapper::IsInstanceGood() { return (INotifyInstance >= 0); }
 
+void INotifyWrapper::AddWatch(std::string path) {
+  AddWatch(path, FallbackFlags);
+}
+
 void INotifyWrapper::AddWatch(std::string path, uint32_t mask) {
   int fd = inotify_add_watch(INotifyInstance, path.c_str(), mask);
+
   if (fd == -1)
     throw std::system_error();
 
@@ -49,7 +60,6 @@ void INotifyWrapper::RemoveWatchByFd(int fd) {
 }
 
 void INotifyWrapper::WatchFiles(std::string cmd) {
-
   inotify_event ieStruct;
 
   ProcessManager pManager(cmd);
@@ -68,14 +78,12 @@ void INotifyWrapper::WatchFiles(std::string cmd) {
       break;
     }
     case IN_IGNORED:
-      AddWatch(FdToPathMap.at(ieStruct.wd), IN_IGNORED | IN_MODIFY);
+      AddWatch(FdToPathMap.at(ieStruct.wd));
       pManager.KillProcess();
 
-      break; // TODO: act on file removed or inode id changed
+      break;
     default:
       break;
     }
   }
-
-  RemoveWatchByFd(0);
 }
