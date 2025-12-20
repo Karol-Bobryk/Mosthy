@@ -1,8 +1,6 @@
 #include "INotifyWrapper.h"
 #include "ProcessManager.h"
 #include <cerrno>
-#include <csignal>
-#include <cstdio>
 #include <stdexcept>
 #include <sys/fcntl.h>
 #include <sys/inotify.h>
@@ -69,8 +67,10 @@ void INotifyWrapper::WatchFiles(std::string cmd) {
       pManager.KillProcess();
       break;
     }
-
     case IN_IGNORED:
+      AddWatch(FdToPathMap.at(ieStruct.wd), IN_IGNORED | IN_MODIFY);
+      pManager.KillProcess();
+
       break; // TODO: act on file removed or inode id changed
     default:
       break;
