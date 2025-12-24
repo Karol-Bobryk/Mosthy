@@ -15,8 +15,7 @@ class INotifyWrapper {
 
 public:
   ~INotifyWrapper();
-  INotifyWrapper();
-  INotifyWrapper(uint32_t FallbackFlags);
+  INotifyWrapper(uint32_t FallbackFlags = 0);
 
   bool IsInstanceGood();
   void AddWatch(std::string path);

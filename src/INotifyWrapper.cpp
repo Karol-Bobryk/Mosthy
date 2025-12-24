@@ -1,6 +1,8 @@
 #include "INotifyWrapper.h"
 #include "ProcessManager.h"
 #include <cerrno>
+#include <cstdio>
+#include <iostream>
 #include <stdexcept>
 #include <sys/fcntl.h>
 #include <sys/inotify.h>
@@ -16,14 +18,8 @@ INotifyWrapper::~INotifyWrapper() {
   }
 }
 
-INotifyWrapper::INotifyWrapper()
-    : INotifyInstance{inotify_init()}, FallbackFlags(0) {
-  if (!IsInstanceGood())
-    throw std::system_error();
-}
-
 INotifyWrapper::INotifyWrapper(uint32_t FallbackFlags)
-    : INotifyInstance{inotify_init1(FallbackFlags)}, FallbackFlags(0) {
+    : INotifyInstance{inotify_init()}, FallbackFlags(FallbackFlags) {
   if (!IsInstanceGood())
     throw std::system_error();
 }
@@ -37,8 +33,9 @@ void INotifyWrapper::AddWatch(std::string path) {
 void INotifyWrapper::AddWatch(std::string path, uint32_t mask) {
   int fd = inotify_add_watch(INotifyInstance, path.c_str(), mask);
 
-  if (fd == -1)
+  if (fd == -1) {
     throw std::system_error();
+  }
 
   FdToPathMap.insert({fd, path});
 }
