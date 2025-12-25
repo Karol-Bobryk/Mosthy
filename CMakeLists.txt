@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
+  set(CMAKE_BUILD_TYPE Debug)
 endif()
 
 add_compile_options(-MMD -MP)
@@ -17,33 +17,43 @@ add_compile_options(-MMD -MP)
 add_subdirectory(lib/Catch2)
 
 
-FILE(GLOB_RECURSE SOURCES 
-     CONFIGURE_DEPENDS
-     LIST_DIRECTORIES false 
-     "src/*.cpp")
+FILE(GLOB_RECURSE SOURCES_LIB
+    CONFIGURE_DEPENDS
+    LIST_DIRECTORIES false
+    "src/lib/*.cpp")
 
-FILE(GLOB_RECURSE SOURCES_TEMPLATES 
-     CONFIGURE_DEPENDS
-     LIST_DIRECTORIES false 
-     "include/*.hpp") # templates
+FILE(GLOB_RECURSE SOURCES_LIB_TEMPLATES
+    CONFIGURE_DEPENDS
+    LIST_DIRECTORIES false
+    "include/*.hpp") # templates
 
-add_executable(${CMAKE_PROJECT_NAME} 
-  ${SOURCES}
-)
+FILE(GLOB SOURCES_MAIN
+    CONFIGURE_DEPENDS
+    LIST_DIRECTORIES false
+    "src/main.cpp")
 
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE include)
+add_library(${CMAKE_PROJECT_NAME}_lib STATIC ${SOURCES_LIB})
+target_include_directories(${CMAKE_PROJECT_NAME}_lib PUBLIC include)
+
+add_executable(${CMAKE_PROJECT_NAME} ${SOURCES_MAIN})
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_NAME}_lib)
+
+# SOURCES
+#   _MAIN           - contains main.cpp
+#   _LIB            - contains all library code for the main app
+#   _LIB_TEMPLATES  - contains all header files
+#   _TEST           - contains test files
 
 enable_testing()
 
-FILE(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false "tests/*.cpp")
+FILE(GLOB_RECURSE SOURCES_TEST LIST_DIRECTORIES false "tests/*.cpp")
 
-if(TEST_SOURCES)
-  add_executable(${CMAKE_PROJECT_NAME}_test
-    ${TEST_SOURCES}
-  )
-  
-  target_link_libraries(${CMAKE_PROJECT_NAME}_test 
-                        PRIVATE 
+if(SOURCES_TEST)
+  add_executable(${CMAKE_PROJECT_NAME}_test ${SOURCES_TEST})
+
+  target_link_libraries(${CMAKE_PROJECT_NAME}_test
+                        PRIVATE
+                        ${CMAKE_PROJECT_NAME}_lib
                         Catch2::Catch2WithMain)
 
   target_include_directories(${CMAKE_PROJECT_NAME}_test PRIVATE include)
@@ -51,7 +61,4 @@ if(TEST_SOURCES)
   include(Catch)
   catch_discover_tests(${CMAKE_PROJECT_NAME}_test)
 endif()
-
-
-
 
