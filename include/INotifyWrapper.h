@@ -7,7 +7,6 @@
 #include <sys/inotify.h>
 
 class INotifyWrapper {
-  // File Descriptors
   uint32_t FallbackFlags;
 
   int INotifyInstance;
@@ -18,8 +17,8 @@ public:
   INotifyWrapper(uint32_t FallbackFlags = 0);
 
   bool IsInstanceGood();
-  void AddWatch(std::string path);
-  void AddWatch(std::string path, uint32_t mask);
+  int AddWatch(std::string path);
+  int AddWatch(std::string path, uint32_t mask);
   void RemoveWatchByFd(int fd);
   void WatchFiles(std::string cmd);
 };

@@ -7,7 +7,6 @@
 int main(int argc, char *argv[]) {
 
   ArgumentHandler argHandler(argc, argv);
-
   INotifyWrapper intfw(IN_MODIFY | IN_IGNORED);
 
   auto FileArgHandler = [&intfw](std::vector<std::string> args) {

@@ -1,8 +1,6 @@
 #include "INotifyWrapper.h"
 #include "ProcessManager.h"
 #include <cerrno>
-#include <cstdio>
-#include <iostream>
 #include <stdexcept>
 #include <sys/fcntl.h>
 #include <sys/inotify.h>
@@ -26,18 +24,18 @@ INotifyWrapper::INotifyWrapper(uint32_t FallbackFlags)
 
 bool INotifyWrapper::IsInstanceGood() { return (INotifyInstance >= 0); }
 
-void INotifyWrapper::AddWatch(std::string path) {
-  AddWatch(path, FallbackFlags);
+int INotifyWrapper::AddWatch(std::string path) {
+  return AddWatch(path, FallbackFlags);
 }
 
-void INotifyWrapper::AddWatch(std::string path, uint32_t mask) {
+int INotifyWrapper::AddWatch(std::string path, uint32_t mask) {
   int fd = inotify_add_watch(INotifyInstance, path.c_str(), mask);
 
-  if (fd == -1) {
+  if (fd == -1)
     throw std::system_error();
-  }
 
   FdToPathMap.insert({fd, path});
+  return fd;
 }
 
 void INotifyWrapper::RemoveWatchByFd(int fd) {
@@ -77,7 +75,6 @@ void INotifyWrapper::WatchFiles(std::string cmd) {
     case IN_IGNORED:
       AddWatch(FdToPathMap.at(ieStruct.wd));
       pManager.KillProcess();
-
       break;
     default:
       break;
