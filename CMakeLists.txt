@@ -49,6 +49,7 @@ enable_testing()
 FILE(GLOB_RECURSE SOURCES_TEST LIST_DIRECTORIES false "tests/*.cpp")
 
 if(SOURCES_TEST)
+  set(CATCH_CONFIG_NO_POSIX_SIGNALS ON)
   add_executable(${CMAKE_PROJECT_NAME}_test ${SOURCES_TEST})
 
   target_link_libraries(${CMAKE_PROJECT_NAME}_test

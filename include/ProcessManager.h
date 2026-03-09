@@ -5,7 +5,6 @@
 #include <vector>
 
 class ProcessManager {
-
   std::vector<std::string> childArguments;
 
   pid_t processId;
@@ -15,7 +14,7 @@ public:
   ProcessManager(std::string);
 
   void SetCommand(std::string);
-
+  bool IsProcessRunning();
   void StartProcess();
   void KillProcess();
 };

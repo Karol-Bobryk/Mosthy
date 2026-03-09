@@ -1,5 +1,7 @@
 #include "ProcessManager.h"
+#include <cerrno>
 #include <cstring>
+#include <iostream>
 #include <spawn.h>
 #include <sstream>
 #include <stdexcept>
@@ -32,10 +34,20 @@ void ProcessManager::StartProcess() {
   }
 }
 
+bool ProcessManager::IsProcessRunning() {
+  int status; // TODO: add status checking
+  int pid = waitpid(processId, &status, WNOHANG);
+  return pid == 0;
+}
+
 void ProcessManager::KillProcess() {
 
-  if (kill(processId, SIGTERM) == -1)
+  if (kill(processId, SIGTERM) == -1) {
+    std::cerr << strerror(errno) << processId;
+    for (auto &e : childArguments)
+      std::cerr << e << "\n";
     throw std::system_error();
+  }
 
   int status = 0; // TODO: add status checking
   if (waitpid(processId, &status, 0) == -1) {
