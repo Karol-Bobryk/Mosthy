@@ -14,20 +14,19 @@ constexpr std::string_view DEFAULT_FLAG = "-f";
 class ArgumentHandler {
   using Handler = std::function<void(std::vector<std::string>)>;
   using ArgFuncPair = std::pair<std::vector<std::string>, Handler>;
-  int count;
   std::vector<std::string> values;
 
   void InitializeMap();
 
 public:
-  std::map<std::string, ArgFuncPair> FlagToFunctionMap;
+  std::map<std::string, ArgFuncPair> flagToFunctionMap;
 
-  ArgumentHandler(int, char *[]);
+  ArgumentHandler(int, char **);
   ~ArgumentHandler();
 
-  void AddHandler(std::string, Handler);
-  void RunHandler(std::string);
-  static bool IsFlag(std::string);
+  void AddHandler(const std::string &flag, Handler handler);
+  void RunHandler(const std::string &flag);
+  static bool IsFlag(const std::string &str);
 };
 
 #endif

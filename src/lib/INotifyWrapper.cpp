@@ -12,57 +12,56 @@
 
 INotifyWrapper::~INotifyWrapper() {
   if (IsInstanceGood()) {
-    close(INotifyInstance);
+    close(iNotifyInstance);
   }
 }
 
 INotifyWrapper::INotifyWrapper(uint32_t FallbackFlags)
-    : INotifyInstance{inotify_init()}, FallbackFlags(FallbackFlags) {
+    : iNotifyInstance{inotify_init()}, fallbackFlags(FallbackFlags) {
   if (!IsInstanceGood())
     throw std::system_error();
 }
 
-bool INotifyWrapper::IsInstanceGood() { return (INotifyInstance >= 0); }
-
-int INotifyWrapper::AddWatch(std::string path) {
-  return AddWatch(path, FallbackFlags);
+int INotifyWrapper::AddWatch(const std::string &path) {
+  return AddWatch(path, fallbackFlags);
 }
 
-int INotifyWrapper::AddWatch(std::string path, uint32_t mask) {
-  int fd = inotify_add_watch(INotifyInstance, path.c_str(), mask);
+int INotifyWrapper::AddWatch(const std::string &path, uint32_t mask) {
+  int fd = inotify_add_watch(iNotifyInstance, path.c_str(), mask);
 
   if (fd == -1)
     throw std::system_error();
 
-  FdToPathMap.insert({fd, path});
+  fdToPathMap.insert({fd, path});
   return fd;
 }
 
 void INotifyWrapper::RemoveWatchByFd(int fd) {
-  auto iter = FdToPathMap.find(fd);
+  auto iter = fdToPathMap.find(fd);
 
-  if (iter == FdToPathMap.end())
+  if (iter == fdToPathMap.end())
     throw std::out_of_range("Given fd is not currently supervised");
 
   // Checking if given fd is still open
-  if (fcntl(fd, F_GETFD) || errno == EBADF) {
-    int status = inotify_rm_watch(INotifyInstance, fd);
+  if ((fcntl(fd, F_GETFD) != 0) || errno == EBADF) {
+    int status = inotify_rm_watch(iNotifyInstance, fd);
     if (status == -1)
       throw std::system_error();
   }
 
-  FdToPathMap.erase(iter);
+  fdToPathMap.erase(iter);
 }
 
-void INotifyWrapper::WatchFiles(std::string cmd) {
-  inotify_event ieStruct;
+void INotifyWrapper::WatchFiles(const std::string &cmd) {
+  inotify_event ieStruct{};
 
   ProcessManager pManager(cmd);
 
   while (true) {
     pManager.StartProcess();
 
-    int watchStatus = read(INotifyInstance, &ieStruct, sizeof(inotify_event));
+    ssize_t watchStatus =
+        read(iNotifyInstance, &ieStruct, sizeof(inotify_event));
 
     if (watchStatus == -1)
       throw std::system_error();
@@ -73,7 +72,7 @@ void INotifyWrapper::WatchFiles(std::string cmd) {
       break;
     }
     case IN_IGNORED:
-      AddWatch(FdToPathMap.at(ieStruct.wd));
+      AddWatch(fdToPathMap.at(ieStruct.wd));
       pManager.KillProcess();
       break;
     default:

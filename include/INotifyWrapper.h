@@ -1,5 +1,5 @@
-#ifndef INOTIFYWRAPPER
-#define INOTIFYWRAPPER
+#ifndef INOTIFY_WRAPPER
+#define INOTIFY_WRAPPER
 
 #include <cstdint>
 #include <map>
@@ -7,19 +7,20 @@
 #include <sys/inotify.h>
 
 class INotifyWrapper {
-  uint32_t FallbackFlags;
+  uint32_t fallbackFlags;
 
-  int INotifyInstance;
-  std::map<int, std::string> FdToPathMap;
+  int iNotifyInstance;
+  std::map<int, std::string> fdToPathMap;
 
 public:
   ~INotifyWrapper();
   INotifyWrapper(uint32_t FallbackFlags = 0);
 
-  bool IsInstanceGood();
-  int AddWatch(std::string path);
-  int AddWatch(std::string path, uint32_t mask);
+  [[nodiscard]] bool IsInstanceGood() const { return (iNotifyInstance >= 0); }
+
+  int AddWatch(const std::string &path);
+  int AddWatch(const std::string &path, uint32_t mask);
   void RemoveWatchByFd(int fd);
-  void WatchFiles(std::string cmd);
+  void WatchFiles(const std::string &cmd);
 };
 #endif

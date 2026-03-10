@@ -7,18 +7,22 @@
 #include <stdexcept>
 #include <string>
 #include <sys/wait.h>
-#include <system_error>
 #include <vector>
 
 ProcessManager::~ProcessManager() { KillProcess(); }
 
-ProcessManager::ProcessManager(std::string command) { SetCommand(command); }
+ProcessManager::ProcessManager(const std::string &cmd) : processId(0) {
+  SetCommand(cmd);
+}
 
 void ProcessManager::StartProcess() {
 
   std::vector<char *> argV;
+
+  argV.reserve(childArguments.size());
   for (const auto &arg : childArguments) {
-    argV.push_back(const_cast<char *>(arg.c_str()));
+    // Const cast is unfortunately required here
+    argV.push_back(const_cast<char *>(arg.c_str())); // NOLINT
   }
 
   argV.push_back(nullptr);
@@ -34,8 +38,8 @@ void ProcessManager::StartProcess() {
   }
 }
 
-bool ProcessManager::IsProcessRunning() {
-  int status; // TODO: add status checking
+bool ProcessManager::IsProcessRunning() const {
+  int status = 0; // TODO: add status checking
   int pid = waitpid(processId, &status, WNOHANG);
   return pid == 0;
 }
@@ -46,16 +50,16 @@ void ProcessManager::KillProcess() {
     std::cerr << strerror(errno) << processId;
     for (auto &e : childArguments)
       std::cerr << e << "\n";
-    throw std::system_error();
+    // TODO: add logging as you cannot really throw here
   }
 
   int status = 0; // TODO: add status checking
   if (waitpid(processId, &status, 0) == -1) {
-    throw std::system_error();
+    // same here
   }
 }
 
-void ProcessManager::SetCommand(std::string cmd) {
+void ProcessManager::SetCommand(const std::string &cmd) {
 
   std::istringstream ofsParser(cmd);
 

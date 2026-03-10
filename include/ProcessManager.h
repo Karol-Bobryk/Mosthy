@@ -11,10 +11,10 @@ class ProcessManager {
 
 public:
   ~ProcessManager();
-  ProcessManager(std::string);
+  ProcessManager(const std::string &cmd);
 
-  void SetCommand(std::string);
-  bool IsProcessRunning();
+  void SetCommand(const std::string &cmd);
+  [[nodiscard]] bool IsProcessRunning() const;
   void StartProcess();
   void KillProcess();
 };
