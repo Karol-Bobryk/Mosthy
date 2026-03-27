@@ -25,10 +25,10 @@ int main(int argc, char *argv[]) {
     intfw.WatchFiles(ostr.str());
   };
 
-  argHandler.AddHandler("-f", fileArgHandler);
-  argHandler.AddHandler("-c", commandArgHandler);
-  argHandler.RunHandler("-f");
-  argHandler.RunHandler("-c");
+  argHandler.AddHandler("f", fileArgHandler);
+  argHandler.AddHandler("c", commandArgHandler);
+  argHandler.RunHandler("f");
+  argHandler.RunHandler("c");
 
   return EXIT_SUCCESS;
 }
