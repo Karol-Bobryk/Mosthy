@@ -14,6 +14,9 @@ ArgumentHandler::ArgumentHandler(int argc, char **argv) {
   if (argc < 3)
     // TODO: display help
     throw std::invalid_argument("Not enough arguments provided");
+  if (argv == nullptr)
+    // TODO: display help
+    throw std::invalid_argument("Argv cannot be null");
 
   int opt = 0;
   // parsing option args
@@ -37,17 +40,6 @@ void ArgumentHandler::ParseArg(char arg) {
   auto p = std::make_pair(std::vector{std::string(optarg)}, Handler());
 
   flagToFunctionMap.emplace(strOpt, p);
-}
-
-void ArgumentHandler::InitializeMap() {
-  for (const auto &v : values) {
-    // if it is a flag assign to map (if not assigned before)
-    if (IsFlag(v) && flagToFunctionMap.find(v) == flagToFunctionMap.end()) {
-      auto p = std::make_pair(std::vector<std::string>(), Handler());
-
-      flagToFunctionMap.emplace(v, p);
-    }
-  }
 }
 
 void ArgumentHandler::AddHandler(const std::string &flag, Handler handler) {
