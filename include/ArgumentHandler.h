@@ -20,13 +20,12 @@ class ArgumentHandler {
   std::vector<std::string> values;
 
   [[nodiscard]] static bool IsValidFlagGraph(char c);
-  void InitializeMap();
   void ParseArg(char arg);
 
 public:
   std::map<std::string, ArgFuncPair> flagToFunctionMap;
 
-  ArgumentHandler(int, char **);
+  ArgumentHandler(int argc, char **argv);
   ~ArgumentHandler();
 
   void AddHandler(const std::string &flag, Handler handler);
