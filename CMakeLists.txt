@@ -12,7 +12,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-add_compile_options(-MMD -MP)
+add_compile_options(-MP)
 
 add_subdirectory(lib/Catch2)
 

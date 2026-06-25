@@ -1,7 +1,9 @@
 #include "ArgumentHandler.h"
 #include "Helpers/ArgvGenerator.h"
+#include "catch2/catch_message.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
+#include <getopt.h>
 #include <gnu-versions.h>
 #include <initializer_list>
 #include <string_view>
@@ -23,12 +25,16 @@ TEST_CASE("Initialization_InvalidBashArgs_Throws", "[ArgumentHandler]") {
 
   ArgvGenerator avGen(GENERATE_REF(from_range(values)));
 
+  optind = 0;
+
   REQUIRE_THROWS(ArgumentHandler(avGen.GetArgc(), avGen.GetArgvs()));
 }
 
 TEST_CASE("Initialization_ValidBashArgs_Succeeds", "[ArgumentHandler]") {
 
   using std::string_view, std::initializer_list, std::array;
+
+  optind = 0;
 
   array<initializer_list<string_view>, 2> values{
       initializer_list<string_view>{"./binary", ".", "-c", "echo 1"},
@@ -41,4 +47,31 @@ TEST_CASE("Initialization_ValidBashArgs_Succeeds", "[ArgumentHandler]") {
   ArgvGenerator avGen(GENERATE_REF(from_range(values)));
 
   REQUIRE_NOTHROW(ArgumentHandler(avGen.GetArgc(), avGen.GetArgvs()));
+}
+
+TEST_CASE("RunningHandler_ValidFlags_Succeeds", "[ArgumentHandler]") {
+
+  using std::string_view, std::initializer_list, std::array;
+  optind = 0;
+  array<initializer_list<string_view>, 1> values{
+      initializer_list<string_view>{"./binary", ".", "-c", "echo 1"},
+  };
+
+  ArgvGenerator avGen(GENERATE_REF(from_range(values)));
+
+  ArgumentHandler agvh((int)avGen.GetArgc(), avGen.GetArgvs());
+
+  for (int i = 0; i < avGen.GetArgc(); i++) {
+
+    UNSCOPED_INFO(avGen.GetArgvs()[i]);
+  }
+
+  auto testHandler = [](const std::vector<std::string> &args) {};
+
+  agvh.AddHandler("c", testHandler);
+
+  agvh.AddHandler("f", [](const std::vector<std::string> &args) {});
+
+  // agvh.RunHandler("f");
+  // agvh.RunHandler("c");
 }
