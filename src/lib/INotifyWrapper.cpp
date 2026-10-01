@@ -28,7 +28,7 @@ INotifyWrapper::INotifyWrapper(uint32_t FallbackFlags)
              << strerror(errno);
     });
 
-    LoggerService::Log(this, LogSeverity::CRITICAL);
+    LoggerService::Log(*this, LogSeverity::CRITICAL);
 
     throw std::system_error();
   }
@@ -46,7 +46,7 @@ int INotifyWrapper::AddWatch(const std::string &path, uint32_t mask) {
       stream << "failed to add watch for " << path.c_str();
     });
 
-    LoggerService::Log(this, LogSeverity::WARNING);
+    LoggerService::Log(*this, LogSeverity::WARNING);
 
     throw std::system_error();
   }
@@ -63,7 +63,7 @@ void INotifyWrapper::RemoveWatchByFd(int fd) {
       stream << "Couldn't reach file with fd: " << fd;
     });
 
-    LoggerService::Log(this, LogSeverity::INFO);
+    LoggerService::Log(*this, LogSeverity::INFO);
     throw std::out_of_range("Given fd is not currently supervised");
   }
 
@@ -77,7 +77,7 @@ void INotifyWrapper::RemoveWatchByFd(int fd) {
                << " " << strerror(errno);
       });
 
-      LoggerService::Log(this, LogSeverity::WARNING);
+      LoggerService::Log(*this, LogSeverity::WARNING);
       throw std::system_error();
     }
   }
@@ -102,7 +102,7 @@ void INotifyWrapper::WatchFiles(const std::string &cmd) {
         stream << "watch failed " << strerror(errno);
       });
 
-      LoggerService::Log(this, LogSeverity::WARNING);
+      LoggerService::Log(*this, LogSeverity::WARNING);
       throw std::system_error();
     }
     switch (ieStruct.mask) {

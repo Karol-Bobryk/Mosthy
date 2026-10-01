@@ -15,7 +15,7 @@ void LoggerService::Log(LogSerializable &obj, LogSeverity severity) {
   LoggerService &service = GetInstance();
 
   service.threadPool.AddTask(LoggerService::LogThreadWrapper, std::ref(obj),
-                             service, severity);
+                             std::ref(service), severity);
 }
 
 void LoggerService::LogThreadWrapper(LogSerializable &logObj,
